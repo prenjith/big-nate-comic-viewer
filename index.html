@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Comic Viewer - Big Nate</title>
+        <style>
+            body {
+                font-family: 'Roboto', sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f7f7f7;
+            }
+
+            .comic-container {
+                text-align: center;
+            }
+
+            #comic-image {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+            }
+
+            #comic-date {
+                font-size: 18px;
+                margin-top: 10px;
+                color: #333;
+                font-weight: 600;
+            }
+
+            #note {
+                font-size: 14px;
+                margin-top: 6px;
+                color: #666;
+                font-style: italic;
+            }
+
+            .controls {
+                margin-top: 20px;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            button, input {
+                padding: 10px 20px;
+                font-size: 16px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            button:hover, input:hover {
+                background-color: #ddd;
+            }
+
+            #random-button {
+                background-color: #3498db;
+                color: white;
+            }
+
+            #date-picker {
+                padding: 8px;
+                font-size: 16px;
+                border: 2px solid #3498db;
+                border-radius: 5px;
+            }
+
+            #first-button, #last-button {
+                background-color: #2ecc71;
+                color: white;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="comic-container">
+            <img id="comic-image" src="./big_nate_comics/1997-05-11.jpg" alt="Big Nate Comic">
+            <div id="comic-date">Comic Date: May 11, 1997</div>
+            <div id="note"></div>
+        </div>
+
+        <div class="controls">
+            <button id="prev-button">Previous</button>
+            <button id="next-button">Next</button>
+            <button id="random-button">Random Comic</button>
+            <button id="first-button">First Comic</button>
+            <button id="last-button">Last Comic</button>
+            <input type="date" id="date-picker" min="1991-01-06" max="2026-11-11">
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const comicImage = document.getElementById("comic-image");
+                const comicDateElem = document.getElementById("comic-date");
+                const noteElem = document.getElementById("note");
+                const datePicker = document.getElementById("date-picker");
+
+                const startDate = new Date("1991-01-06T12:00:00");
+                const endDate = new Date();
+                endDate.setHours(12, 0, 0, 0);
+                const lastDaily = new Date("2026-06-13T12:00:00");
+                let currentDate = new Date("1997-05-11T12:00:00");
+
+                const newestFolder = "./newest_comics";
+                const downloadedFolder = "./downloaded_comics";
+                const oldFolder = "./big_nate_comics";
+                const extensions = ["png", "jpeg", "gif"];
+                const skipDates = ["1992-05-03", "1992-05-10"];
+
+                function formatDate(date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    return `${year}-${month}-${day}`;
+                }
+
+                datePicker.max = formatDate(endDate);
+
+                function getCandidates(date) {
+                    const formattedDate = formatDate(date);
+                    const year = date.getFullYear();
+                    const candidates = [];
+
+                    for (let i = 0; i < extensions.length; i++) {
+                        candidates.push(`${newestFolder}/${year}/${formattedDate}.${extensions[i]}`);
+                    }
+
+                    candidates.push(`${oldFolder}/${formattedDate}.jpg`);
+
+                    for (let i = 0; i < extensions.length; i++) {
+                        candidates.push(`${downloadedFolder}/${year}/${formattedDate}.${extensions[i]}`);
+                    }
+
+                    return candidates;
+                }
+
+                function updateComic() {
+                    const formattedDate = formatDate(currentDate);
+                    const candidates = getCandidates(currentDate);
+
+                    comicDateElem.textContent = `Comic Date: ${currentDate.toLocaleDateString()}`;
+                    datePicker.value = formattedDate;
+                    noteElem.textContent = "";
+
+                    if (currentDate > lastDaily && currentDate.getDay() !== 0) {
+                        comicImage.removeAttribute("src");
+                        comicImage.alt = "Only Sunday strips are shown after June 13, 2026";
+                        comicDateElem.textContent = `Comic Date: ${currentDate.toLocaleDateString()} (only Sunday strips are shown after June 13, 2026)`;
+                        return;
+                    }
+
+                    if (currentDate > lastDaily) {
+                        noteElem.textContent = "After June 13, 2026, only Sunday strips are shown.";
+                    }
+
+                    if (skipDates.indexOf(formattedDate) !== -1) {
+                        comicImage.removeAttribute("src");
+                        comicImage.alt = `Comic not available for ${formattedDate}`;
+                        comicDateElem.textContent = `Comic Date: ${currentDate.toLocaleDateString()} (not available)`;
+                        return;
+                    }
+
+                    let index = 0;
+
+                    function tryNext() {
+                        if (index >= candidates.length) {
+                            comicImage.removeAttribute("src");
+                            comicImage.alt = `No comic found for ${formattedDate}`;
+                            comicDateElem.textContent = `Comic Date: ${currentDate.toLocaleDateString()} (not available)`;
+                            return;
+                        }
+
+                        const img = new Image();
+                        img.onload = function () {
+                            comicImage.src = candidates[index];
+                            comicImage.alt = `Big Nate Comic ${formattedDate}`;
+
+                            const aspectRatio = img.width / img.height;
+                            let newWidth, newHeight;
+
+                            if (img.height < img.width / 2) {
+                                newWidth = 1400;
+                                newHeight = newWidth / aspectRatio;
+                            } else {
+                                newHeight = 700;
+                                newWidth = newHeight * aspectRatio;
+                            }
+
+                            comicImage.style.width = `${newWidth}px`;
+                            comicImage.style.height = `${newHeight}px`;
+                        };
+                        img.onerror = function () {
+                            index++;
+                            tryNext();
+                        };
+                        img.src = candidates[index];
+                    }
+
+                    tryNext();
+                }
+
+                function goNext() {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    if (currentDate > lastDaily) {
+                        while (currentDate.getDay() !== 0) currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    if (currentDate > endDate) currentDate = new Date(startDate);
+                    updateComic();
+                }
+
+                function goPrev() {
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    if (currentDate > lastDaily) {
+                        while (currentDate.getDay() !== 0) currentDate.setDate(currentDate.getDate() - 1);
+                    }
+                    if (currentDate < startDate) currentDate = new Date(endDate);
+                    updateComic();
+                }
+
+                document.getElementById("prev-button").addEventListener("click", goPrev);
+                document.getElementById("next-button").addEventListener("click", goNext);
+
+                document.getElementById("random-button").addEventListener("click", () => {
+                    const randomTime = Math.random() * (endDate - startDate);
+                    currentDate = new Date(startDate.getTime() + randomTime);
+                    if (currentDate > lastDaily) {
+                        while (currentDate.getDay() !== 0) currentDate.setDate(currentDate.getDate() + 1);
+                        if (currentDate > endDate) currentDate.setDate(currentDate.getDate() - 7);
+                    }
+                    updateComic();
+                });
+
+                document.getElementById("first-button").addEventListener("click", () => {
+                    currentDate = new Date(startDate);
+                    updateComic();
+                });
+
+                document.getElementById("last-button").addEventListener("click", () => {
+                    currentDate = new Date(endDate);
+                    while (currentDate.getDay() !== 0) currentDate.setDate(currentDate.getDate() - 1);
+                    updateComic();
+                });
+
+                datePicker.addEventListener("change", () => {
+                    const selectedDate = new Date(datePicker.value + "T12:00:00");
+                    if (selectedDate >= startDate && selectedDate <= endDate) {
+                        currentDate = selectedDate;
+                        updateComic();
+                    } else {
+                        alert("Please select a date between January 6, 1991, and November 11, 2026.");
+                    }
+                });
+
+                window.addEventListener("keydown", (event) => {
+                    if (event.key === "ArrowRight" || event.key === " ") {
+                        event.preventDefault();
+                        goNext();
+                    } else if (event.key === "ArrowLeft") {
+                        goPrev();
+                    }
+                });
+
+                comicImage.addEventListener("click", goNext);
+
+                updateComic();
+            });
+        </script>
+    </body>
+</html>
