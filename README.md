@@ -11,9 +11,13 @@ A local comic viewer for the full Big Nate archive (1991–2026).
 
 ## Use it
 
-The comic archive is private. If you have access, download the zip, unzip it,
-and open `bignate2.html` (the same viewer as `index.html` here) inside the
-unzipped folder.
+Download the archive from Google Drive:
+
+https://drive.google.com/open?id=1FCREFh7_u_AgmdD-iKMo5RYe5fG7TinX
+
+Drive shows a virus-scan warning for large files; click "Download anyway".
+Unzip it, then open `bignate2.html` (the same viewer as `index.html` here)
+inside the unzipped folder.
 
 ## Notes
 
