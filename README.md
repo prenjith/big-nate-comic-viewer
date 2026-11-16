@@ -11,25 +11,9 @@ A local comic viewer for the full Big Nate archive (1991–2026).
 
 ## Use it
 
-The comics are not included in this repository (they are large and copyrighted). Download the archive from the GitHub release:
-
-https://github.com/prenjith/big-nate-comic-viewer/releases/tag/archive-v1
-
-The archive is split into two parts because GitHub caps release assets at 2 GB. Join them first:
-
-```
-# macOS / Linux
-cat BigNateArchive.zip.part1 BigNateArchive.zip.part2 > BigNateArchive.zip
-
-# Windows
-copy /b BigNateArchive.zip.part1 + BigNateArchive.zip.part2 BigNateArchive.zip
-```
-
-Then unzip and open `bignate2.html` (the same viewer as `index.html` here) inside the unzipped folder.
-
-A Google Drive mirror is also available. Drive shows a virus-scan warning for large files; click "Download anyway":
-
-https://drive.google.com/file/d/11CUCZ30By0NSg3Ng3wvmO2TU_c_SuYLJ/view
+The comic archive is private. If you have access, download the zip, unzip it,
+and open `bignate2.html` (the same viewer as `index.html` here) inside the
+unzipped folder.
 
 ## Notes
 
