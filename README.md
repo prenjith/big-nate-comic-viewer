@@ -11,9 +11,9 @@ A local comic viewer for the full Big Nate archive (1991–2026).
 
 ## Use it
 
-Download the archive from Google Drive:
+Open the Google Drive folder and download the zip:
 
-https://drive.google.com/open?id=1FCREFh7_u_AgmdD-iKMo5RYe5fG7TinX
+https://drive.google.com/open?id=1gcAbOnoKxgACIW0kIWtMPIf0Euy1iuzX
 
 Drive shows a virus-scan warning for large files; click "Download anyway".
 Unzip it, then open `bignate2.html` (the same viewer as `index.html` here)
